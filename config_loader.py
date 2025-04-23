@@ -48,10 +48,6 @@ def get_maxWind():
     if _get('app', 'MinTemp'):
         return load_config().getint('app', 'MaxWind')
 
-def get_motorcycleEnabled():
-    if _get('app', 'Motorcycle'):
-        return load_config().getboolean('app', 'Motorcycle')
-    
 def get_tomorrowsForecast():
     if _get('app', 'IncludeTomorrowsForecast'):
         return load_config().getboolean('app', 'IncludeTomorrowsForecast')

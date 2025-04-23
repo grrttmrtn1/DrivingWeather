@@ -10,7 +10,10 @@ def main():
     try:
         if not config_loader.validate_config:
             raise('Configuration could not be validated.')
+        if not config_loader.get_minTemp():
+            raise("Ensure that a minimum temperature is set in your config")
         weatherData = weather.get_weatherData()
+        print('here')
     except Exception as e:
         print(e)
 
