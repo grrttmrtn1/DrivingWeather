@@ -29,7 +29,7 @@ def checkWind(data):
         maxWind = config_loader.get_maxWind()
         if not maxWind:
             return True
-        if data.get('wind').get('speed') > maxWind or data.get('wind').get('gusts') > maxWind
+        if data.get('wind').get('speed') > maxWind or data.get('wind').get('gusts') > maxWind:
             return False
         return True
     except Exception as e:
@@ -51,14 +51,10 @@ def AcceptableLimits(data):
     try:
         if not checkTemperatures(data):
             return False
-
-        if config_loader.get_maxWind():
-            if not checkWind(data):
-                return False
-
-        if config_loader.get_WatchRain():
-            if not checkRain(data):
-                return False
+        if not checkWind(data):
+            return False
+        if not checkRain(data):
+            return False
 
         return True
     except Exception as e:
