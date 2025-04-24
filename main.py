@@ -27,6 +27,8 @@ def checkTemperatures(data):
 def checkWind(data):
     try:
         maxWind = config_loader.get_maxWind()
+        if not maxWind:
+            return True
         if data.get('wind').get('speed') > maxWind or data.get('wind').get('gusts') > maxWind
             return False
         return True
@@ -35,6 +37,8 @@ def checkWind(data):
 
 def checkRain(data):
     try:
+        if not config_loader.get_watchRainEnabled:
+            return True
         if data.get('precipitation') != "none":
             if data.get('probability').get('precipitation') >= config_loader.get_PercentRaInProbabilityAcceptance():
                 return False
@@ -42,6 +46,25 @@ def checkRain(data):
         return True
     except Exception as e:
         print(e)
+
+def AcceptableLimits(data):
+    try:
+        if not checkTemperatures(data):
+            return False
+
+        if config_loader.get_maxWind():
+            if not checkWind(data):
+                return False
+
+        if config_loader.get_WatchRain():
+            if not checkRain(data):
+                return False
+
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
 
 def main():
     try:
@@ -59,11 +82,7 @@ def main():
                 day = dailyWeather[0].get('day')
                 raise(f"the first index returned does not match today's date: {today} and returned: {day}")
             todaysWeather = dailyWeather[0]
-            todaysTempCheck = checkTemperatures(todaysWeather)
-            if config_loader.get_maxWind() != False:
-                todaysWindCheck = checkWind(todaysWeather)
-            if config_loader.get_watchRainEnabled:
-                todaysRainCheck = checkRain(todaysWeather)
+            AcceptableLimits(todaysWeather)
             if config_loader.get_tomorrowsForecast():
                 tomorrow = datetime.date.isoformat(datetime.date.today() + datetime.timedelta(days=1))
                 if not dailyWeather[1].get('day') == tomorrow:
@@ -71,10 +90,7 @@ def main():
                     raise(f"Tomorrows forecast set in config. The second index returned does not match tomorrow's date: {tomorrow} and returned: {day}")
                 tomorrowsWeather = dailyWeather[1]
                 tomorrowsTempCheck = checkTemperatures(tomorrowsWeather)
-                if config_loader.get_maxWind() != False:
-                    tomorrowsWindCheck = checkWind(tomorrowsWeather)
-                if config_loader.get_watchRainEnabled:
-                    tomorrowsRainCheck = checkRain(tomorrowsWeather)
+                AcceptableLimits(tomorrowsTempCheck)
 
 
     except Exception as e:
