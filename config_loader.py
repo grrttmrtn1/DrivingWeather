@@ -59,6 +59,11 @@ def get_watchRainEnabled():
     if _get('app', 'WatchRain'):
         return load_config().getboolean('app', 'WatchRain')
     return False
+
+def get_PercentRaInProbabilityAcceptance():
+    if _get('app', 'PercentRaInProbabilityAcceptance'):
+        return load_config().getboolean('app', 'PercentRaInProbabilityAcceptance')
+    return False
     
 def get_apiKey():
     if _get('app', 'ApiKey'):

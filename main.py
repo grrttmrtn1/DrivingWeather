@@ -6,17 +6,40 @@ import datetime
 #code temperature check and wind check
 #test running in a container
 #setup to run with a systemd timer
+_summary = ""
 
 def checkTemperatures(data):
     try:
         minTemp = config_loader.get_minTemp()
         if not data.get('temperature_min') >= minTemp:
-            return f"Temperature is under your minimum: {minTemp} at {data.get('temperature_min')}"
+            print(f"Temperature is under your minimum: {minTemp} at {data.get('temperature_min')}")
+            return False
         else:
             if config_loader.get_maxTemp():
                 if config_loader.get_maxTemp() <= data.get('temperature_max'):
-                    return f"Temperature is above your minimum: {minTemp} and under your maximum: {config_loader.get_maxTemp()} raising to {data.get('temperature_max')}"
-            return f"Temperature is above your minimum: {minTemp} at {data.get('temperature_min')}"
+                    print(f"Temperature is above your minimum: {minTemp} and under your maximum: {config_loader.get_maxTemp()} raising to {data.get('temperature_max')}")
+                    return True
+            print(f"Temperature is above your minimum: {minTemp} at {data.get('temperature_min')}")
+            return True
+    except Exception as e:
+        print(e)
+
+def checkWind(data):
+    try:
+        maxWind = config_loader.get_maxWind()
+        if data.get('wind').get('speed') > maxWind or data.get('wind').get('gusts') > maxWind
+            return False
+        return True
+    except Exception as e:
+        print(e)
+
+def checkRain(data):
+    try:
+        if data.get('precipitation') != "none":
+            if data.get('probability').get('precipitation') >= config_loader.get_PercentRaInProbabilityAcceptance():
+                return False
+            return True
+        return True
     except Exception as e:
         print(e)
 
@@ -36,13 +59,23 @@ def main():
                 day = dailyWeather[0].get('day')
                 raise(f"the first index returned does not match today's date: {today} and returned: {day}")
             todaysWeather = dailyWeather[0]
-            checkTemperatures(todaysWeather)
+            todaysTempCheck = checkTemperatures(todaysWeather)
+            if config_loader.get_maxWind() != False:
+                todaysWindCheck = checkWind(todaysWeather)
+            if config_loader.get_watchRainEnabled:
+                todaysRainCheck = checkRain(todaysWeather)
             if config_loader.get_tomorrowsForecast():
                 tomorrow = datetime.date.isoformat(datetime.date.today() + datetime.timedelta(days=1))
                 if not dailyWeather[1].get('day') == tomorrow:
                     day = dailyWeather[1].get('day')
                     raise(f"Tomorrows forecast set in config. The second index returned does not match tomorrow's date: {tomorrow} and returned: {day}")
                 tomorrowsWeather = dailyWeather[1]
+                tomorrowsTempCheck = checkTemperatures(tomorrowsWeather)
+                if config_loader.get_maxWind() != False:
+                    tomorrowsWindCheck = checkWind(tomorrowsWeather)
+                if config_loader.get_watchRainEnabled:
+                    tomorrowsRainCheck = checkRain(tomorrowsWeather)
+
 
     except Exception as e:
         print(e)
