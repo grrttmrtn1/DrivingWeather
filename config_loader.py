@@ -28,7 +28,6 @@ def validate_config(path='/home/gmartin/dev/OkToDrive/config.ini') -> bool:
 
 def _get(section, key):
     config = load_config()
-    
     if not config.has_section(section):
         return False
     if not config.has_option(section, key):
@@ -39,29 +38,36 @@ def _get(section, key):
 def get_minTemp():
     if _get('app', 'MinTemp'):
         return load_config().getint('app', 'MinTemp')
+    return False
 
 def get_maxTemp():
-    if _get('app', 'MinTemp'):
+    if _get('app', 'MaxTemp'):
         return load_config().getint('app', 'MaxTemp')
+    return False
 
 def get_maxWind():
-    if _get('app', 'MinTemp'):
+    if _get('app', 'MaxWind'):
         return load_config().getint('app', 'MaxWind')
+    return False
 
 def get_tomorrowsForecast():
     if _get('app', 'IncludeTomorrowsForecast'):
         return load_config().getboolean('app', 'IncludeTomorrowsForecast')
+    return False
     
 def get_watchRainEnabled():
     if _get('app', 'WatchRain'):
         return load_config().getboolean('app', 'WatchRain')
+    return False
     
 def get_apiKey():
     if _get('app', 'ApiKey'):
         return load_config().get('app', 'ApiKey')
+    return False
     
 def get_baseURL():
     if _get('app', 'BaseURL'):
         return load_config().get('app', 'BaseURL')
+    return False
 
 
