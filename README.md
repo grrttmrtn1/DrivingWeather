@@ -1,4 +1,4 @@
-Example config
+Example config.ini
 
 [app]
 
