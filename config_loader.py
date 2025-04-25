@@ -75,4 +75,9 @@ def get_baseURL():
         return load_config().get('app', 'BaseURL')
     return False
 
+def get_Location():
+    if _get('app', 'Location'):
+        return load_config().get('app', 'Location')
+    return False
+
 
