@@ -17,3 +17,5 @@ IncludeTomorrowsForecast = TRUE
 BaseURL = ai-weather-by-meteosource.p.rapidapi.com
 
 ApiKey = 
+
+Location = 

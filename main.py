@@ -7,19 +7,20 @@ import datetime
 #test running in a container
 #setup to run with a systemd timer
 _summary = ""
+_decision = ""
 
 def checkTemperatures(data):
     try:
         minTemp = config_loader.get_minTemp()
-        if not data.get('temperature_min') >= minTemp:
-            print(f"Temperature is under your minimum: {minTemp} at {data.get('temperature_min')}")
+        if not data.get('temperature_max') >= minTemp:
+            print(f"Forecasted temperature is under your minimum: {minTemp} at {data.get('temperature_max')}")
             return False
         else:
             if config_loader.get_maxTemp():
                 if config_loader.get_maxTemp() <= data.get('temperature_max'):
                     print(f"Temperature is above your minimum: {minTemp} and under your maximum: {config_loader.get_maxTemp()} raising to {data.get('temperature_max')}")
                     return True
-            print(f"Temperature is above your minimum: {minTemp} at {data.get('temperature_min')}")
+            print(f"Forcasted emperature is above your minimum: {minTemp} at {data.get('temperature_max')}")
             return True
     except Exception as e:
         print(e)
@@ -61,9 +62,16 @@ def AcceptableLimits(data):
         print(e)
         return False
 
+def createString(variable, message):
+    if variable:
+        variable += f"\n{message}"
+    else: 
+        variable += message
+    return variable
 
 def main():
     try:
+        global _decision
         if not config_loader.validate_config():
             raise('Configuration could not be validated.')
         if not config_loader.get_minTemp():
@@ -78,7 +86,10 @@ def main():
                 day = dailyWeather[0].get('day')
                 raise(f"the first index returned does not match today's date: {today} and returned: {day}")
             todaysWeather = dailyWeather[0]
-            AcceptableLimits(todaysWeather)
+            if AcceptableLimits(todaysWeather):
+                _decision = createString(_decision, 'Good weather to drive today.')
+            else:
+                _decision = createString(_decision, 'Weather is not looking good today.')
             if config_loader.get_tomorrowsForecast():
                 tomorrow = datetime.date.isoformat(datetime.date.today() + datetime.timedelta(days=1))
                 if not dailyWeather[1].get('day') == tomorrow:
@@ -86,8 +97,12 @@ def main():
                     raise(f"Tomorrows forecast set in config. The second index returned does not match tomorrow's date: {tomorrow} and returned: {day}")
                 tomorrowsWeather = dailyWeather[1]
                 tomorrowsTempCheck = checkTemperatures(tomorrowsWeather)
-                AcceptableLimits(tomorrowsTempCheck)
-
+                if AcceptableLimits(tomorrowsTempCheck):
+                    _decision = createString(_decision, 'Good weather to drive tomorrow.')
+                else:
+                    _decision = createString(_decision, 'Weather is not looking good tomorrow.')
+        print(dailyWeather)
+        print(_decision)
 
     except Exception as e:
         print(e)
