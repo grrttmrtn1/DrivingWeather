@@ -11,26 +11,32 @@ _decision = ""
 
 def checkTemperatures(data):
     try:
+        global _summary
         minTemp = config_loader.get_minTemp()
         if not data.get('temperature_max') >= minTemp:
-            print(f"Forecasted temperature is under your minimum: {minTemp} at {data.get('temperature_max')}")
+            print(f"Forecasted high temperature is under your minimum: {minTemp} at {data.get('temperature_max')}")
+            _summary = createString(_summary, f"Forecasted high temperature is under your minimum: {minTemp} at {data.get('temperature_max')}")
             return False
         else:
             if config_loader.get_maxTemp():
                 if config_loader.get_maxTemp() <= data.get('temperature_max'):
-                    print(f"Temperature is above your minimum: {minTemp} and under your maximum: {config_loader.get_maxTemp()} raising to {data.get('temperature_max')}")
+                    print(f"Forecasted temperature is above your minimum: {minTemp} and under your maximum: {config_loader.get_maxTemp()} raising to {data.get('temperature_max')}")
+                    _summary = createString(_summary, f"Forecasted temperature is above your minimum: {minTemp} and under your maximum: {config_loader.get_maxTemp()} raising to {data.get('temperature_max')}")
                     return True
-            print(f"Forcasted emperature is above your minimum: {minTemp} at {data.get('temperature_max')}")
+            print(f"Forcasted temperature is above your minimum: {minTemp} at {data.get('temperature_max')}")
+            _summary = createString(_summary, f"Forcasted temperature is above your minimum: {minTemp} at {data.get('temperature_max')}")
             return True
     except Exception as e:
         print(e)
 
 def checkWind(data):
     try:
+        global _summary
         maxWind = config_loader.get_maxWind()
         if not maxWind:
             return True
         if data.get('wind').get('speed') > maxWind or data.get('wind').get('gusts') > maxWind:
+            _summary = createString(_summary, f"Forcasted wind is above your maximum: {maxWind}mph at {data.get('wind').get('speed')}mph")
             return False
         return True
     except Exception as e:
@@ -38,10 +44,12 @@ def checkWind(data):
 
 def checkRain(data):
     try:
-        if not config_loader.get_watchRainEnabled:
+        global _summary
+        if not config_loader.get_watchRainEnabled():
             return True
         if data.get('precipitation') != "none":
             if data.get('probability').get('precipitation') >= config_loader.get_PercentRaInProbabilityAcceptance():
+                _summary = createString(_summary, f"Forcasted precipitation is above your minimum likelihood: {config_loader.get_PercentRaInProbabilityAcceptance()}% at {data.get('probability').get('precipitation')}%")
                 return False
             return True
         return True
@@ -72,6 +80,7 @@ def createString(variable, message):
 def main():
     try:
         global _decision
+        global _summary
         if not config_loader.validate_config():
             raise('Configuration could not be validated.')
         if not config_loader.get_minTemp():
@@ -86,6 +95,7 @@ def main():
                 day = dailyWeather[0].get('day')
                 raise(f"the first index returned does not match today's date: {today} and returned: {day}")
             todaysWeather = dailyWeather[0]
+            _summary = createString(_summary, 'Todays Weather:')
             if AcceptableLimits(todaysWeather):
                 _decision = createString(_decision, 'Good weather to drive today.')
             else:
@@ -96,13 +106,15 @@ def main():
                     day = dailyWeather[1].get('day')
                     raise(f"Tomorrows forecast set in config. The second index returned does not match tomorrow's date: {tomorrow} and returned: {day}")
                 tomorrowsWeather = dailyWeather[1]
-                tomorrowsTempCheck = checkTemperatures(tomorrowsWeather)
-                if AcceptableLimits(tomorrowsTempCheck):
+                #tomorrowsTempCheck = checkTemperatures(tomorrowsWeather)
+                _summary = createString(_summary, 'Tomorrows Weather:')
+                if AcceptableLimits(tomorrowsWeather):
                     _decision = createString(_decision, 'Good weather to drive tomorrow.')
                 else:
                     _decision = createString(_decision, 'Weather is not looking good tomorrow.')
         print(dailyWeather)
         print(_decision)
+        print(_summary)
 
     except Exception as e:
         print(e)

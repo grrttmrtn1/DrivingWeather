@@ -1,3 +1,5 @@
+Building to monitor weather in the morning rather than checking each day in the event you have a vehicle you only take out in certain weather. 
+
 Example config.ini
 
 [app]
